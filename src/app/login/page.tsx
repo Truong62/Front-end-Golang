@@ -12,18 +12,31 @@ import {
 import {Input} from '@/components/ui/input';
 import {Button} from '@/components/ui/button';
 import {Label} from '@/components/ui/label';
+import {useLogin} from '@/hook/useLogin';
+
+type LoginData = {
+  email: string;
+  password: string;
+};
 
 export default function Login(): React.ReactElement {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [loginData, setLoginData] = useState<LoginData>({
+    email: '',
+    password: '',
+  });
+
+  const {mutate, isPending, isSuccess, error, data} = useLogin();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log({email, password});
+    mutate({email: loginData.email, password: loginData.password});
   };
 
+  console.log(data);
+  console.log(isSuccess);
+
   return (
-    <div className="flex items-center justify-center w-full h-screen">
+    <div className="flex items-center justify-center w-full h-[calc(100vh-50px)]">
       <Card className="w-[350px]">
         <CardHeader>
           <CardTitle>Login</CardTitle>
@@ -37,8 +50,8 @@ export default function Login(): React.ReactElement {
                 id="email"
                 type="email"
                 placeholder="name@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={loginData.email}
+                onChange={(e) => setLoginData((prev) => ({...prev, email: e.target.value}))}
                 required
               />
             </div>
@@ -47,18 +60,19 @@ export default function Login(): React.ReactElement {
               <Input
                 id="password"
                 type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={loginData.password}
+                onChange={(e) => setLoginData((prev) => ({...prev, password: e.target.value}))}
                 required
               />
             </div>
           </CardContent>
           <CardFooter className="mt-4">
-            <Button type="submit" className="w-full">
-              Sign In
+            <Button disabled={isPending} type="submit" className="w-full">
+              {isPending ? 'Loading...' : 'Login'}
             </Button>
           </CardFooter>
         </form>
+        <div>{error?.message}</div>
       </Card>
     </div>
   );

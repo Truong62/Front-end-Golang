@@ -12,15 +12,22 @@ type LoginResponse = {
 };
 
 const loginRequest = async (body: LoginProps): Promise<LoginResponse> => {
-  const res = await fetch('http://localhost:8080/login', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify(body),
-  });
+  try {
+    const res = await fetch('http://localhost:8080/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
 
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.message || 'lỗi rồi cu');
-  return data;
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'error');
+    return data;
+  } catch (error) {
+    console.error('Login error:', error);
+    throw error;
+  }
 };
 
 export function useLogin() {
