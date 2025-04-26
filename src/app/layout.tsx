@@ -18,7 +18,7 @@ export default function RootLayout({
       <body suppressHydrationWarning>
         <QueryProvider>
           <Header />
-          <main className="container py-8">{children}</main>
+          <main>{children}</main>
         </QueryProvider>
       </body>
     </html>

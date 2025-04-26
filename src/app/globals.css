@@ -1,6 +1,16 @@
 @import 'tailwindcss';
 @import "tw-animate-css";
 
+/* Reset CSS */
+/* *, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+} */
+
+
+/* End Reset CSS */
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
