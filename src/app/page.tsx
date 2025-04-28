@@ -15,7 +15,7 @@ export default function Home() {
   });
 
   return (
-    <div className="flex flex-col items-center px-4 py-6 w-full">
+    <div className="flex flex-col items-center px-4 py-6 w-full min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
       <div className="w-full max-w-4xl mx-auto mb-8">
         <div className="flex flex-col md:flex-row justify-between items-center mb-8">
           <div>

@@ -20,56 +20,126 @@ interface DragItem {
 export const TodoColumn: React.FC<TodoColumnProps> = ({columnType, todos, onDrop}) => {
   const ref = useRef<HTMLDivElement>(null);
 
-  const [{isOver}, drop] = useDrop(() => ({
+  const [{isOver, canDrop}, drop] = useDrop(() => ({
     accept: 'TODO_ITEM',
     canDrop: (item: DragItem) => {
       if (columnType === ColumnType.TODO && item.source === ColumnType.DONE) return false;
-
       return true;
     },
     drop: (item: DragItem) => {
       onDrop(item.id, item.source, columnType);
     },
     collect: (monitor) => ({
-      isOver: monitor.isOver() && monitor.canDrop(),
+      isOver: monitor.isOver(),
+      canDrop: monitor.canDrop(),
     }),
   }));
 
   drop(ref);
 
+  const isActive = isOver && canDrop;
+
   const getColumnStyle = () => {
     if (columnType === ColumnType.TODO) {
       return {
         title: 'To do',
-        bgColor: isOver ? 'bg-blue-100' : 'bg-blue-50',
-        borderColor: 'border-blue-200',
+        bgColor: isActive ? 'bg-blue-100' : 'bg-white',
+        borderColor: isActive ? 'border-blue-300' : 'border-blue-200',
         headingColor: 'text-blue-700',
+        iconColor: 'text-blue-500',
+        badgeColor: 'bg-blue-100 text-blue-700',
       };
     } else {
       return {
         title: 'Done',
-        bgColor: isOver ? 'bg-green-100' : 'bg-green-50',
-        borderColor: 'border-green-200',
+        bgColor: isActive ? 'bg-green-100' : 'bg-white',
+        borderColor: isActive ? 'border-green-300' : 'border-green-200',
         headingColor: 'text-green-700',
+        iconColor: 'text-green-500',
+        badgeColor: 'bg-green-100 text-green-700',
       };
     }
   };
 
-  const {title, bgColor, borderColor, headingColor} = getColumnStyle();
+  const {title, bgColor, borderColor, headingColor, iconColor, badgeColor} = getColumnStyle();
+
+  const getColumnIcon = () => {
+    if (columnType === ColumnType.TODO) {
+      return (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-5 w-5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+          />
+        </svg>
+      );
+    } else {
+      return (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-5 w-5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+        </svg>
+      );
+    }
+  };
 
   return (
     <div
       ref={ref}
-      className={`flex flex-col w-full h-full min-h-[400px] ${bgColor} ${borderColor} border rounded-lg p-4 transition-colors`}
+      className={`flex flex-col w-full h-full min-h-[500px] ${bgColor} 
+        ${borderColor} border-2 rounded-xl p-5 transition-all 
+        duration-300 ease-in-out shadow-md`}
     >
-      <h2 className={`text-xl font-semibold mb-4 ${headingColor}`}>{title}</h2>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center">
+          <span className={`${iconColor} mr-2`}>{getColumnIcon()}</span>
+          <h2 className={`text-xl font-bold ${headingColor}`}>{title}</h2>
+        </div>
+        <span className={`${badgeColor} px-2 py-1 rounded-full text-xs font-semibold`}>
+          {todos.length}
+        </span>
+      </div>
 
       {todos.length === 0 ? (
-        <div className="flex items-center justify-center h-32 text-gray-400 border border-dashed rounded-md">
-          Drag and drop task here
+        <div
+          className={`flex flex-col items-center justify-center h-64 text-gray-400 
+            border-2 border-dashed rounded-lg p-6 mt-4 
+            transition-all duration-300 ${isActive ? borderColor : 'hover:border-gray-400'}`}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-10 w-10 mb-2"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            />
+          </svg>
+          <p className="text-sm font-medium">Kéo và thả task vào đây</p>
         </div>
       ) : (
-        <ul className="space-y-2">
+        <ul
+          className="space-y-3 overflow-y-auto px-1 py-2"
+          style={{maxHeight: 'calc(100vh - 200px)'}}
+        >
           {todos.map((todo) => (
             <DraggableTodoItem key={todo.id} todo={todo} columnType={columnType} onDrop={onDrop} />
           ))}

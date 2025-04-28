@@ -43,24 +43,45 @@ export const DraggableTodoItem: React.FC<DraggableTodoItemProps> = ({todo, colum
   drag(drop(ref));
 
   const getBgColor = () => {
-    if (isDragging) return 'bg-gray-200';
-    if (isOver) return 'bg-gray-100';
-    if (columnType === ColumnType.TODO) return 'bg-blue-50 border-blue-200';
-    return 'bg-green-50 border-green-200';
+    if (columnType === ColumnType.TODO) {
+      return 'bg-blue-50';
+    }
+    return 'bg-green-50';
+  };
+
+  const getBorderColor = () => {
+    if (columnType === ColumnType.TODO) {
+      return 'border-blue-200';
+    }
+    return 'border-green-200';
   };
 
   return (
     <li
       ref={ref}
-      className={`p-3 rounded-md flex justify-between items-center ${columnType === ColumnType.DONE ? 'cursor-default' : 'cursor-pointer hover:cursor-grab active:cursor-grabbing'} transition-colors ${getBgColor()} border`}
-      style={{opacity: isDragging ? 0.5 : 1}}
+      className={`p-4 rounded-lg flex justify-between items-center 
+        ${columnType === ColumnType.DONE ? 'cursor-default' : 'cursor-grab'} 
+        ${getBgColor()} ${getBorderColor()} border shadow-sm hover:shadow-md
+        transition-all duration-200`}
+      style={{
+        opacity: isDragging ? 0.5 : 1,
+      }}
     >
-      <span className={todo.completed ? 'line-through' : ''}>{todo.title}</span>
+      <span
+        className={`font-medium ${todo.completed ? 'text-gray-400 line-through' : 'text-gray-700'}`}
+      >
+        {todo.title}
+      </span>
       <div className="flex items-center">
         <span
-          className={`inline-block w-3 h-3 rounded-full mr-2 ${todo.completed ? 'bg-green-500' : 'bg-blue-500'}`}
+          className={`inline-block w-3 h-3 rounded-full mr-2 
+            ${todo.completed ? 'bg-green-500' : 'bg-blue-500'}`}
         ></span>
-        <span className="text-xs text-gray-500">{todo.completed ? 'Done' : 'Doing'}</span>
+        <span
+          className={`text-xs ${todo.completed ? 'text-green-600' : 'text-blue-600'} font-medium`}
+        >
+          {todo.completed ? 'Done' : 'Doing'}
+        </span>
       </div>
     </li>
   );
