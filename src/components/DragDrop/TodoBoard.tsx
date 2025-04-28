@@ -76,7 +76,7 @@ export const TodoBoard: React.FC<TodoBoardProps> = ({todos}) => {
   return (
     <DndProvider backend={HTML5Backend}>
       <TodoProvider initialTodos={todos}>
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 py-10">
+        <div className="min-h-screen  py-10">
           <TodoBoardContent />
         </div>
       </TodoProvider>

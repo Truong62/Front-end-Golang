@@ -91,8 +91,6 @@ export const TodoProvider: React.FC<TodoProviderProps> = ({children, initialTodo
   const updateTodoMutation = useUpdateTodoApi();
 
   const moveTodo = (todoId: string, source: ColumnType, destination: ColumnType) => {
-    console.log('Moving todo:', {todoId, source, destination});
-
     dispatch({
       type: 'MOVE_TODO',
       payload: {todoId, source, destination},
@@ -104,7 +102,6 @@ export const TodoProvider: React.FC<TodoProviderProps> = ({children, initialTodo
         ...todoToUpdate,
         completed: destination === ColumnType.DONE,
       };
-      console.log('Updating todo with:', updatedTodo);
       updateTodoMutation.mutate({todoId, data: updatedTodo});
     } else {
       console.warn('Todo not found:', todoId);

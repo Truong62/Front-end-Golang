@@ -28,7 +28,7 @@ export const DraggableTodoItem: React.FC<DraggableTodoItemProps> = ({todo, colum
     }),
   });
 
-  const [{isOver}, drop] = useDrop({
+  const [{}, drop] = useDrop({
     accept: 'TODO_ITEM',
     drop: (item: DragItem) => {
       if (item.id !== todo.id || item.source !== columnType) {
@@ -68,11 +68,14 @@ export const DraggableTodoItem: React.FC<DraggableTodoItemProps> = ({todo, colum
       }}
     >
       <span
-        className={`font-medium ${todo.completed ? 'text-gray-400 line-through' : 'text-gray-700'}`}
+        className={`font-medium ${
+          todo.completed ? 'text-gray-400 line-through' : 'text-gray-700'
+        } truncate max-w-[250px]`}
+        title={todo.title}
       >
         {todo.title}
       </span>
-      <div className="flex items-center">
+      <div className="flex items-center flex-shrink-0 ml-2">
         <span
           className={`inline-block w-3 h-3 rounded-full mr-2 
             ${todo.completed ? 'bg-green-500' : 'bg-blue-500'}`}
