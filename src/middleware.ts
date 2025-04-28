@@ -6,8 +6,6 @@ export function middleware(request: NextRequest) {
 
   const token = request.cookies.get('token')?.value;
 
-  console.log('token', token);
-
   const publicRoutes = ['/login', '/register'];
   const isPublicRoute = publicRoutes.some((route) => pathname === route);
 

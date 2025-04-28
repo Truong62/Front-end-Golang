@@ -43,7 +43,6 @@ export default function Login(): React.ReactElement {
     undefined,
     {
       onSuccess: (data) => {
-        console.log(data);
         if (data?.success && data?.data?.token) {
           localStorage.setItem('token', data.data.token);
           document.cookie = `token=${data.data.token}; path=/`;

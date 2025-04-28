@@ -30,9 +30,7 @@ const Register = (): React.ReactElement => {
     email: '',
     password: '',
   });
-  const {mutate, isPending, isSuccess, error, data} = usePostApi<InputRegister, OutputRegister>(
-    '/api/register',
-  );
+  const {mutate, isPending, error} = usePostApi<InputRegister, OutputRegister>('/api/register');
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     mutate({email: loginData.email, password: loginData.password});
