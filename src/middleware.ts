@@ -4,9 +4,19 @@ import type {NextRequest} from 'next/server';
 export function middleware(request: NextRequest) {
   const {pathname} = request.nextUrl;
 
-  const isLoginIn = request.cookies.get('token')?.value;
+  const token = request.cookies.get('token')?.value;
 
-  if (!isLoginIn && pathname !== '/login' && !pathname.startsWith('/_next')) {
+  console.log('token', token);
+
+  const publicRoutes = ['/login', '/register'];
+  const isPublicRoute = publicRoutes.some((route) => pathname === route);
+
+  const isSystemRoute =
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/api') ||
+    pathname.includes('favicon.ico');
+
+  if (!token && !isPublicRoute && !isSystemRoute) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
