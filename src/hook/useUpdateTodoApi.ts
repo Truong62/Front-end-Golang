@@ -17,8 +17,6 @@ export const useUpdateTodoApi = () => {
 
   return useMutation({
     mutationFn: async ({todoId, data}: UpdateTodoParams) => {
-      console.log('Calling PUT API with:', {todoId, data});
-
       const response = await fetch(`/api/todos/${todoId}`, {
         method: 'PUT',
         headers: {
@@ -27,8 +25,6 @@ export const useUpdateTodoApi = () => {
         },
         body: JSON.stringify(data),
       });
-
-      console.log('API response status:', response.status);
 
       if (response.status === 401) {
         logout();
@@ -39,7 +35,6 @@ export const useUpdateTodoApi = () => {
       return response.json();
     },
     onSuccess: () => {
-      console.log('Update successful, invalidating queries');
       queryClient.invalidateQueries({queryKey: ['todos']});
     },
     onError: (error) => {

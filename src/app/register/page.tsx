@@ -14,6 +14,9 @@ import {Label} from '@/components/ui/label';
 import {Button} from '@/components/ui/button';
 import Link from 'next/link';
 import {usePostApi} from '@/hook/usePostApi';
+import {useRouter} from 'next/navigation';
+import {toast} from 'sonner';
+
 type InputRegister = {
   email: string;
   password: string;
@@ -26,11 +29,25 @@ type OutputRegister = {
 };
 
 const Register = (): React.ReactElement => {
+  const router = useRouter();
   const [loginData, setLoginData] = useState<InputRegister>({
     email: '',
     password: '',
   });
-  const {mutate, isPending, error} = usePostApi<InputRegister, OutputRegister>('/api/register');
+  const {mutate, isPending} = usePostApi<InputRegister, OutputRegister>(
+    '/api/register',
+    undefined,
+    {
+      onSuccess: () => {
+        toast.success('Registration successful! Please login.');
+        router.push('/login');
+      },
+      onError: (error) => {
+        toast.error(error.message);
+      },
+    },
+  );
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     mutate({email: loginData.email, password: loginData.password});
@@ -83,7 +100,6 @@ const Register = (): React.ReactElement => {
               <Link href="/login">Back to Login</Link>
             </Button>
           </CardFooter>
-          <div>{error?.message}</div>
         </Card>
       </div>
     </div>
