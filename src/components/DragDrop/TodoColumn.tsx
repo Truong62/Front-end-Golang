@@ -105,10 +105,12 @@ export const TodoColumn: React.FC<TodoColumnProps> = ({columnType, todos, onDrop
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
-          <span className={`${iconColor} mr-2`}>{getColumnIcon()}</span>
-          <h2 className={`text-xl font-bold ${headingColor}`}>{title}</h2>
+          <span className={`${iconColor} mr-2 flex-shrink-0`}>{getColumnIcon()}</span>
+          <h2 className={`text-xl font-bold ${headingColor} truncate`}>{title}</h2>
         </div>
-        <span className={`${badgeColor} px-2 py-1 rounded-full text-xs font-semibold`}>
+        <span
+          className={`${badgeColor} px-2 py-1 rounded-full text-xs font-semibold flex-shrink-0 ml-2`}
+        >
           {todos.length}
         </span>
       </div>

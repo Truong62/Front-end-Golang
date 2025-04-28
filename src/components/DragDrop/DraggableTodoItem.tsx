@@ -62,20 +62,22 @@ export const DraggableTodoItem: React.FC<DraggableTodoItemProps> = ({todo, colum
       className={`p-4 rounded-lg flex justify-between items-center 
         ${columnType === ColumnType.DONE ? 'cursor-default' : 'cursor-grab'} 
         ${getBgColor()} ${getBorderColor()} border shadow-sm hover:shadow-md
-        transition-all duration-200`}
+        transition-all duration-200 overflow-hidden`}
       style={{
         opacity: isDragging ? 0.5 : 1,
       }}
     >
-      <span
-        className={`font-medium ${
-          todo.completed ? 'text-gray-400 line-through' : 'text-gray-700'
-        } truncate max-w-[250px]`}
-        title={todo.title}
-      >
-        {todo.title}
-      </span>
-      <div className="flex items-center flex-shrink-0 ml-2">
+      <div className="flex-1 min-w-0 mr-2">
+        <p
+          className={`font-medium ${
+            todo.completed ? 'text-gray-400 line-through' : 'text-gray-700'
+          } truncate`}
+          title={todo.title}
+        >
+          {todo.title}
+        </p>
+      </div>
+      <div className="flex items-center flex-shrink-0">
         <span
           className={`inline-block w-3 h-3 rounded-full mr-2 
             ${todo.completed ? 'bg-green-500' : 'bg-blue-500'}`}
