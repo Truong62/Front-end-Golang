@@ -1,10 +1,15 @@
+'use client';
+
 import {useMutation, UseMutationOptions} from '@tanstack/react-query';
+import {useLogout} from '@/hook/useLogout';
 
 export const useApiMutation = <TInput, TOutput>(
   url: string,
   token?: string,
   options?: Omit<UseMutationOptions<TOutput, Error, TInput>, 'mutationFn'>,
 ) => {
+  const logout = useLogout();
+
   return useMutation<TOutput, Error, TInput>({
     mutationFn: async (data: TInput) => {
       const res = await fetch(url, {
@@ -15,6 +20,11 @@ export const useApiMutation = <TInput, TOutput>(
         },
         body: JSON.stringify(data),
       });
+
+      if (res.status === 401) {
+        logout();
+        throw new Error('Invalid or expired token');
+      }
 
       if (!res.ok) {
         try {

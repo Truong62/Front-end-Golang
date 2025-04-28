@@ -1,37 +1,39 @@
 // hooks/useGetData.ts
-import {useQuery} from '@tanstack/react-query';
-import {getCookie} from '@/utils/cookieUtils';
+'use client';
 
-interface UseGetDataProps<T> {
+import {useQuery} from '@tanstack/react-query';
+import {useLogout} from '@/hook/useLogout';
+
+interface UseGetDataProps {
   endpoint: string;
-  queryKey: string | (string | number)[];
-  enabled?: boolean;
-  responseType?: T;
+  queryKey: string[];
   token?: string;
 }
 
-const fetcher = async <T>(endpoint: string, token?: string): Promise<T> => {
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-  };
-  if (token) headers['Authorization'] = `Bearer ${token}`;
+export const useGetData = <T>({endpoint, queryKey, token}: UseGetDataProps) => {
+  const logout = useLogout();
 
-  const response = await fetch(endpoint, {
-    headers,
+  return useQuery({
+    queryKey,
+    queryFn: async () => {
+      const response = await fetch(endpoint, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : '',
+        },
+      });
+
+      if (response.status === 401) {
+        logout();
+        throw new Error('Invalid or expired token');
+      }
+
+      if (!response.ok) throw new Error('Network response was not ok');
+
+      return response.json() as Promise<T>;
+    },
+    retry: 1,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    gcTime: 1000 * 60 * 30, // 30 minutes
+    refetchOnWindowFocus: false,
   });
-
-  if (!response.ok) throw new Error('Network response was not ok');
-
-  const data = (await response.json()) as T;
-  return data;
 };
-
-export function useGetData<T>({endpoint, queryKey, enabled = true, token}: UseGetDataProps<T>) {
-  const authToken = token || getCookie('token');
-
-  return useQuery<T>({
-    queryKey: Array.isArray(queryKey) ? queryKey : [queryKey],
-    queryFn: () => fetcher<T>(endpoint, authToken || undefined),
-    enabled,
-  });
-}

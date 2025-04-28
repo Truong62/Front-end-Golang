@@ -3,6 +3,7 @@
 import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {getCookie} from '@/utils/cookieUtils';
 import {Todo} from '@/types/todo';
+import {useLogout} from '@/hook/useLogout';
 
 interface UpdateTodoParams {
   todoId: string;
@@ -12,6 +13,7 @@ interface UpdateTodoParams {
 export const useUpdateTodoApi = () => {
   const queryClient = useQueryClient();
   const token = getCookie('token');
+  const logout = useLogout();
 
   return useMutation({
     mutationFn: async ({todoId, data}: UpdateTodoParams) => {
@@ -27,6 +29,11 @@ export const useUpdateTodoApi = () => {
       });
 
       console.log('API response status:', response.status);
+
+      if (response.status === 401) {
+        logout();
+        throw new Error('Invalid or expired token');
+      }
 
       if (!response.ok) throw new Error('can not update todo');
       return response.json();
