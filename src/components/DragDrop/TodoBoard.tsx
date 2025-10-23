@@ -12,15 +12,44 @@ interface TodoBoardProps {
 }
 
 const TodoBoardContent: React.FC = () => {
-  const {todos, moveTodo} = useTodo();
+  const {todos, moveTodo, deleteTodo, updateTodoIndex} = useTodo();
 
   const todoState: {[key in ColumnType]: Todo[]} = {
     [ColumnType.TODO]: todos[ColumnType.TODO],
     [ColumnType.DONE]: todos[ColumnType.DONE],
   };
 
-  const handleDrop = (todoId: string, source: ColumnType, destination: ColumnType) => {
-    moveTodo(todoId, source, destination);
+  const handleDrop = (
+    todoId: string,
+    source: ColumnType,
+    destination: ColumnType,
+    draggedTodo: Todo,
+    targetTodo?: Todo,
+  ) => {
+    if (source === destination && targetTodo) {
+      if (draggedTodo && targetTodo) {
+        const currentDraggedTodo = todos[source].find((t) => t.id === draggedTodo.id);
+        const currentTargetTodo = todos[destination].find((t) => t.id === targetTodo.id);
+
+        if (currentDraggedTodo && currentTargetTodo) {
+          if (currentDraggedTodo.id !== currentTargetTodo.id) {
+            console.log(
+              'Swapping items:',
+              currentDraggedTodo.title,
+              'with',
+              currentTargetTodo.title,
+            );
+            updateTodoIndex(currentDraggedTodo, currentTargetTodo);
+          }
+        }
+      }
+    } else {
+      moveTodo(todoId, source, destination);
+    }
+  };
+
+  const handleDelete = (todoId: string): void => {
+    deleteTodo(todoId);
   };
 
   return (
@@ -58,6 +87,7 @@ const TodoBoardContent: React.FC = () => {
             columnType={ColumnType.TODO}
             todos={todoState[ColumnType.TODO]}
             onDrop={handleDrop}
+            onDelete={handleDelete}
           />
         </div>
         <div className="transition-all duration-300 hover:translate-y-[-4px]">
@@ -65,6 +95,7 @@ const TodoBoardContent: React.FC = () => {
             columnType={ColumnType.DONE}
             todos={todoState[ColumnType.DONE]}
             onDrop={handleDrop}
+            onDelete={handleDelete}
           />
         </div>
       </div>

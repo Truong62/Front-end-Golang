@@ -10,9 +10,11 @@ import {Todo} from '@/types/todo';
 export default function Home() {
   const {data, isLoading, error} = useGetData<Todo[]>({
     endpoint: '/api/todos',
-    queryKey: [''],
+    queryKey: ['todos'],
     token: getCookie('token') || undefined,
   });
+
+  console.log(data);
 
   return (
     <div className="flex flex-col items-center px-4 py-6 w-full min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">

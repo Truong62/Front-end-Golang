@@ -17,13 +17,17 @@ interface TodoState {
 type TodoAction =
   | {type: 'SET_TODOS'; payload: {todos: Todo[]}}
   | {type: 'MOVE_TODO'; payload: {todoId: string; source: ColumnType; destination: ColumnType}}
-  | {type: 'UPDATE_TODO_STATUS'; payload: {todoId: string; completed: boolean}};
+  | {type: 'UPDATE_TODO_STATUS'; payload: {todoId: string; completed: boolean}}
+  | {type: 'DELETE_TODO'; payload: {todoId: string}}
+  | {type: 'UPDATE_TODO_INDEX'; payload: {valueTodo: Todo; valueTodoChanged: Todo}};
 
 interface TodoContextType {
   todos: TodoState;
   dispatch: React.Dispatch<TodoAction>;
   moveTodo: (todoId: string, source: ColumnType, destination: ColumnType) => void;
   updateTodoStatus: (todoId: string, data: Todo) => Promise<void>;
+  deleteTodo: (todoId: string) => void;
+  updateTodoIndex: (valueTodo: Todo, valueTodoChanged: Todo) => Promise<void>;
 }
 
 const TodoContext = createContext<TodoContextType | undefined>(undefined);
@@ -70,6 +74,44 @@ const todoReducer = (state: TodoState, action: TodoAction): TodoState => {
         type: 'MOVE_TODO',
         payload: {todoId, source, destination},
       });
+    }
+
+    case 'DELETE_TODO': {
+      const {todoId} = action.payload;
+      return {
+        [ColumnType.TODO]: state[ColumnType.TODO].filter((todo) => todo.id !== todoId),
+        [ColumnType.DONE]: state[ColumnType.DONE].filter((todo) => todo.id !== todoId),
+      };
+    }
+
+    case 'UPDATE_TODO_INDEX': {
+      const {valueTodo, valueTodoChanged} = action.payload;
+      const column = valueTodo.completed ? ColumnType.DONE : ColumnType.TODO;
+
+      const updatedColumn = [...state[column]];
+
+      const draggedIndex = updatedColumn.findIndex((todo) => todo.id === valueTodo.id);
+      const targetIndex = updatedColumn.findIndex((todo) => todo.id === valueTodoChanged.id);
+
+      if (draggedIndex !== -1 && targetIndex !== -1) {
+        [updatedColumn[draggedIndex], updatedColumn[targetIndex]] = [
+          updatedColumn[targetIndex],
+          updatedColumn[draggedIndex],
+        ];
+
+        const draggedIndexValue = updatedColumn[draggedIndex].index;
+        const targetIndexValue = updatedColumn[targetIndex].index;
+
+        updatedColumn[draggedIndex] = {...updatedColumn[draggedIndex], index: draggedIndexValue};
+        updatedColumn[targetIndex] = {...updatedColumn[targetIndex], index: targetIndexValue};
+      }
+
+      const sortedColumn = [...updatedColumn].sort((a, b) => a.index - b.index);
+
+      return {
+        ...state,
+        [column]: sortedColumn,
+      };
     }
 
     default:
@@ -125,8 +167,47 @@ export const TodoProvider: React.FC<TodoProviderProps> = ({children, initialTodo
     }
   };
 
+  const updateTodoIndex = async (valueTodo: Todo, valueTodoChanged: Todo): Promise<void> => {
+    const originalDraggedIndex = valueTodo.index;
+    const originalTargetIndex = valueTodoChanged.index;
+
+    dispatch({
+      type: 'UPDATE_TODO_INDEX',
+      payload: {valueTodo, valueTodoChanged},
+    });
+
+    try {
+      await updateTodoMutation.mutateAsync({
+        todoId: valueTodo.id,
+        data: {...valueTodo, index: originalTargetIndex},
+      });
+      await updateTodoMutation.mutateAsync({
+        todoId: valueTodoChanged.id,
+        data: {...valueTodoChanged, index: originalDraggedIndex},
+      });
+    } catch (error) {
+      console.error('Failed to update todo index', error);
+      dispatch({
+        type: 'UPDATE_TODO_INDEX',
+        payload: {
+          valueTodo: {...valueTodo, index: originalDraggedIndex},
+          valueTodoChanged: {...valueTodoChanged, index: originalTargetIndex},
+        },
+      });
+    }
+  };
+
+  const deleteTodo = (todoId: string) => {
+    dispatch({
+      type: 'DELETE_TODO',
+      payload: {todoId},
+    });
+  };
+
   return (
-    <TodoContext.Provider value={{todos, dispatch, moveTodo, updateTodoStatus}}>
+    <TodoContext.Provider
+      value={{todos, dispatch, moveTodo, updateTodoStatus, deleteTodo, updateTodoIndex}}
+    >
       {children}
     </TodoContext.Provider>
   );

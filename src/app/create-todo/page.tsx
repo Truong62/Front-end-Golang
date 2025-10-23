@@ -9,17 +9,41 @@ import {getCookie} from '@/utils/cookieUtils';
 import {DialogClose, DialogDescription, DialogHeader, DialogTitle} from '@/components/ui/dialog';
 import {DialogContent, DialogFooter} from '@/components/ui/dialog';
 import {Dialog} from '@/components/ui/dialog';
-import Link from 'next/link';
+import {useQueryClient} from '@tanstack/react-query';
+import {useRouter} from 'next/navigation';
+import {Todo} from '@/types/todo';
 
 export default function CreateTodo(): React.ReactElement {
   const [title, setTitle] = useState<string>('');
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+  const queryClient = useQueryClient();
+  const router = useRouter();
+
   const {mutate} = usePostApi('/api/todos', getCookie('token') || undefined, {
-    onSuccess: () => {
+    onSuccess: (newTodo) => {
       setTitle('');
+
+      queryClient.setQueryData(['todos'], (oldData: Todo[] | undefined) => {
+        if (!oldData) return [newTodo];
+        return [...oldData, newTodo];
+      });
+
+      queryClient.invalidateQueries({queryKey: ['todos']});
+
       setIsDialogOpen(true);
     },
   });
+
+  const handleGoToHome = () => {
+    queryClient.invalidateQueries({queryKey: ['todos']});
+    queryClient.refetchQueries({queryKey: ['todos']});
+
+    router.push('/?refresh=' + Date.now());
+  };
+
+  const handleCreateTodo = () => {
+    if (title.trim()) mutate({title});
+  };
 
   return (
     <div className="flex items-center justify-center w-full h-[calc(100vh-50px)]">
@@ -33,7 +57,7 @@ export default function CreateTodo(): React.ReactElement {
             onChange={(e): void => setTitle(e.target.value)}
             required
           />
-          <Button className="cursor-pointer" onClick={() => mutate({title})}>
+          <Button className="cursor-pointer" onClick={handleCreateTodo}>
             Create
           </Button>
         </div>
@@ -47,14 +71,12 @@ export default function CreateTodo(): React.ReactElement {
           <DialogFooter className="sm:justify-start">
             <DialogClose asChild>
               <Button type="button" variant="secondary" onClick={() => setIsDialogOpen(false)}>
-                Yes
+                Create Another
               </Button>
             </DialogClose>
-            <DialogClose asChild>
-              <Button type="button" variant="link">
-                <Link href="/">No</Link>
-              </Button>
-            </DialogClose>
+            <Button type="button" variant="default" onClick={handleGoToHome}>
+              View All Todos
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
